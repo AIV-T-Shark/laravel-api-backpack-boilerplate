@@ -7,6 +7,9 @@
     "require": {
         "php": "^7.4|^8.0",
         "ext-json": "*",
+        "backpack/crud": "4.1.*",
+        "backpack/logmanager": "^4.0",
+        "backpack/permissionmanager": "^6.0",
         "fruitcake/laravel-cors": "^2.0",
         "guzzlehttp/guzzle": "^7.0.1",
         "laravel/framework": "^8.54",
@@ -14,6 +17,7 @@
         "laravel/tinker": "^2.5"
     },
     "require-dev": {
+        "backpack/generators": "^3.1",
         "barryvdh/laravel-ide-helper": "^2.10",
         "facade/ignition": "^2.5",
         "fakerphp/faker": "^1.9.1",
@@ -37,7 +41,9 @@
     "scripts": {
         "post-autoload-dump": [
             "Illuminate\\Foundation\\ComposerScripts::postAutoloadDump",
-            "@php artisan package:discover --ansi"
+            "@php artisan package:discover --ansi",
+            "sed -i -e 's/checkLicenseCodeExists/when/g' vendor/backpack/crud/src/BackpackServiceProvider.php",
+            "sed -i -e 's/sendUsageStats/when/g' vendor/backpack/crud/src/BackpackServiceProvider.php"
         ],
         "post-update-cmd": [
             "@php artisan vendor:publish --tag=laravel-assets --ansi"
@@ -57,7 +63,9 @@
     "extra": {
         "laravel": {
             "dont-discover": [
-                "barryvdh/laravel-ide-helper"
+                "backpack/crud",
+                "backpack/logmanager",
+                "backpack/permissionmanager"
             ]
         }
     },
