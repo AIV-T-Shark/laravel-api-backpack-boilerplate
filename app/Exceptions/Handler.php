@@ -26,16 +26,63 @@ class Handler extends ExceptionHandler
         'password',
         'password_confirmation',
     ];
-
+    
     /**
-     * Register the exception handling callbacks for the application.
+     * Report or log an exception.
      *
+     * @param  \Throwable  $e
      * @return void
+     *
+     * @throws \Throwable
      */
-    public function register()
+    public function report(Throwable $e)
     {
-        $this->reportable(function (Throwable $e) {
-            //
-        });
+        parent::report($e);
+    }
+    
+    /**
+     * Render an exception into an HTTP response.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @param  \Throwable  $exception
+     * @return \Symfony\Component\HttpFoundation\Response
+     *
+     * @throws \Throwable
+     */
+    public function render($request, Throwable $exception)
+    {
+        $request_uri = $request->getRequestUri();
+        if (mb_strpos($request_uri, '/api/') === 0) {
+            if ($exception instanceof \Illuminate\Validation\ValidationException) {
+                dd($exception->validator->errors());
+            }
+            
+            if ($exception instanceof \Symfony\Component\HttpKernel\Exception\NotFoundHttpException) {
+                return response()->json([
+                    'meta' => [
+                        'status' => 404,
+                        'msg' => 'Not Found!',
+                    ]
+                ], 404);
+            }
+            
+            if ($exception instanceof \Symfony\Component\HttpKernel\Exception\HttpException) {
+                return response()->json([
+                    'meta' => [
+                        'status' => $exception->getStatusCode(),
+                        'msg' => $exception->getMessage(),
+                    ]
+                ], $exception->getStatusCode());
+            }
+    
+            return response()->json([
+                'meta' => [
+                    'status' => $exception->getCode(),
+                    'msg' => $exception->getMessage()
+                ]
+            ], 500);
+        }
+        
+        return parent::render($request, $exception);
     }
 }
